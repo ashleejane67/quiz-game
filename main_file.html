@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz Game</title>
+    <link rel="stylesheet" href="design.css">
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1>HTML Quiz</h1>
+            <div class="score-display">Score: <span id="score">0</span>/5</div>
+        </div>
+        
+        <div id="quiz-content" class="quiz-content">
+            <h2 id="question"></h2>
+            <div id="options"></div>
+            <div id="feedback" class="feedback hidden"></div>
+            <button id="next-btn" class="btn hidden">Next Question</button>
+        </div>
+        
+        <div id="results" class="final-results hidden">
+            <h2>Quiz Complete!</h2>
+            <p id="final-score"></p>
+            <p id="message"></p>
+            <button id="restart" class="btn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const quiz = [
+    {
+        q: "What does HTML stand for?",
+        o: ["Hyper Trainer Marking Language", "Hyper Text Markup Language", "Hyper Text Marketing Language", "Hyper Text Machine Language"],
+        a: 1
+    },
+    {
+        q: "Which HTML element is used to define the title of a document?",
+        o: ["meta", "title", "head", "h1"],
+        a: 1
+    },
+    {
+        q: "Which tag is used to create a hyperlink in HTML?",
+        o: ["a", "link", "href", "url"],
+        a: 0
+    },
+    {
+        q: "How can you insert an image into an HTML page?",
+        o: ["img src='image.jpg'", "image src='image.jpg'", "pic src='image.jpg'", "src img='image.jpg'"],
+        a: 0
+    },
+    {
+        q: "Which tag is used to create a line break in HTML?",
+        o: ["break", "br", "lb", "line"],
+        a: 1
+    }
+];
+
+
+        let current = 0, score = 0, selected = null;
+
+        const el = {
+            question: document.getElementById('question'),
+            options: document.getElementById('options'),
+            feedback: document.getElementById('feedback'),
+            nextBtn: document.getElementById('next-btn'),
+            scoreEl: document.getElementById('score'),
+            quizContent: document.getElementById('quiz-content'),
+            results: document.getElementById('results'),
+            finalScore: document.getElementById('final-score'),
+            message: document.getElementById('message'),
+            restart: document.getElementById('restart')
+        };
+
+        function showQuestion() {
+            const q = quiz[current];
+            el.question.textContent = `Question ${current + 1}: ${q.q}`;
+            el.options.innerHTML = q.o.map((opt, i) => 
+                `<button class="option-btn" onclick="selectAnswer(${i})">${opt}</button>`
+            ).join('');
+            el.feedback.classList.add('hidden');
+            el.nextBtn.classList.add('hidden');
+            selected = null;
+        }
+
+        function selectAnswer(i) {
+            if (selected !== null) return;
+            selected = i;
+            const q = quiz[current];
+            const btns = document.querySelectorAll('.option-btn');
+            
+            btns.forEach(btn => btn.disabled = true);
+            btns[i].classList.add('selected');
+            
+            if (i === q.a) {
+                score++;
+                btns[i].classList.add('correct');
+                el.feedback.textContent = "Correct! Well done!";
+                el.feedback.className = "feedback correct";
+            } else {
+                btns[i].classList.add('incorrect');
+                btns[q.a].classList.add('correct');
+                el.feedback.textContent = `Incorrect. The correct answer is: ${q.o[q.a]}`;
+                el.feedback.className = "feedback incorrect";
+            }
+            
+            el.scoreEl.textContent = score;
+            el.feedback.classList.remove('hidden');
+            el.nextBtn.classList.remove('hidden');
+            el.nextBtn.textContent = current < quiz.length - 1 ? "Next Question" : "View Results";
+        }
+
+        function nextQuestion() {
+            if (current < quiz.length - 1) {
+                current++;
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            el.quizContent.classList.add('hidden');
+            el.results.classList.remove('hidden');
+            
+            const pct = Math.round((score / quiz.length) * 100);
+            el.finalScore.textContent = `Your final score: ${score}/${quiz.length} (${pct}%)`;
+            
+            el.message.textContent = pct >= 90 ? "Excellent! You have a great understanding of HTML!" :
+                                   pct >= 70 ? "Great job! You have a good grasp of HTML fundamentals!" :
+                                   pct >= 50 ? "Not bad! Keep studying to improve your HTML knowledge!" :
+                                   "You can do better! Consider reviewing the HTML basics and try again!";
+        }
+
+        function restart() {
+            current = score = 0;
+            el.scoreEl.textContent = '0';
+            el.results.classList.add('hidden');
+            el.quizContent.classList.remove('hidden');
+            showQuestion();
+        }
+
+        el.nextBtn.onclick = nextQuestion;
+        el.restart.onclick = restart;
+        
+        showQuestion();
+    </script>
+</body>
+</html>
